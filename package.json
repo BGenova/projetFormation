@@ -19,5 +19,18 @@
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-coverage": "^0.8.0",
     "typechain": "^8.1.0"
+  },
+  "scripts": {
+    "test": "hardhat test",
+    "t:t": "hardhat test test/Token.test.js",
+    "compile": "hardhat compile",
+    "d:c:l": "hardhat run scripts/deploy.js --network localhost",
+    "d:c:g": "hardhat run scripts/deploy.js --network goerli",
+    "d:c:s": "hardhat run scripts/deploy.js --network sepolia"
+  },
+  "dependencies": {
+    "@editorjs/editorjs": "^2.27.0",
+    "@editorjs/marker": "^1.3.0",
+    "dotenv": "^16.0.3"
   }
 }
