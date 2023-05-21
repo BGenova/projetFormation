@@ -9,8 +9,47 @@ import {useContext} from "react";
 import {MetamaskContext} from "../../../../../App";
 import {ContractManager} from "../../../../../service/ContractManager/ContractManager";
 import {NavBar} from "../../../../partial/Navbar/NavBar";
+import ProjectDescription from "../ProjetDescription/ProjectDescription";
+import Countdown from "react-countdown";
+import ConversionForm from "../../../../form/ContributionForm/ContributionForm";
 
 const reviews = {href: '#', average: 4, totalCount: 117}
+
+const ArrayTex = [
+    {
+        "id": "3t9oHRvtTi",
+        "type": "paragraph",
+        "data": {
+            "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque lobortis finibus erat, eget vehicula tortor dignissim bibendum. Vestibulum ac nisl id ante efficitur lacinia. Integer porta facilisis blandit. In sodales rutrum dolor quis ultrices. Phasellus in ultrices quam, ac consequat arcu. Sed et convallis sapien. Quisque rhoncus consectetur metus vel tristique. Nullam lacinia vestibulum leo, non facilisis lectus consectetur vitae. In hac habitasse platea dictumst. Pellentesque viverra risus nec ipsum finibus tempus. Phasellus porttitor erat tellus, eget maximus metus feugiat et. Cras sed fermentum risus."
+        }
+    },
+    {
+        "id": "PNLJmDn0oE",
+        "type": "paragraph",
+        "data": {
+            "text": "Sed blandit ante mi, et fringilla libero imperdiet quis. Fusce sed justo sit amet velit laoreet finibus. Quisque eget malesuada tortor. Aenean varius vestibulum sem sit amet tincidunt. Phasellus ut vulputate risus, ac imperdiet dui. Vestibulum est lectus, tempus quis tortor quis, dignissim tempor ex. Sed eleifend massa sed dolor pulvinar, nec finibus ipsum venenatis. Ut dignissim pretium molestie. Fusce eu ante fringilla, sodales nisi vitae, pretium mi. Aenean ultrices nec tellus a mollis. Morbi ac ligula egestas elit euismod varius. Proin ullamcorper nisi ut ante fringilla, at congue massa hendrerit. Duis nec semper ipsum, sit amet mattis felis. Aenean sollicitudin mauris turpis, scelerisque pharetra magna dictum ac. Donec imperdiet scelerisque elit, ut ullamcorper nunc."
+        }
+    },
+    {
+        "id": "UP7VjFi5gJ",
+        "type": "paragraph",
+        "data": {
+            "text": "In condimentum arcu sit amet tempus pretium. Curabitur suscipit iaculis porta. Aliquam nibh libero, vestibulum placerat eros eu, egestas venenatis massa. Cras mauris lorem, mattis et nulla in, convallis gravida justo. Phasellus metus felis, egestas quis pulvinar ut, faucibus at magna. Maecenas pharetra sapien eget sem bibendum fermentum. Fusce efficitur metus sit amet magna fermentum, sit amet ullamcorper quam congue. Nunc faucibus sem ante, vitae efficitur sem malesuada ac. Sed hendrerit ut diam in rhoncus. Etiam vel convallis nunc, at egestas mauris. Sed vehicula neque ac rutrum iaculis."
+        }
+    },
+    {
+        "id": "RxNvJLZDgQ",
+        "type": "list",
+        "data": {
+            "style": "ordered",
+            "items": [
+                "15151515151",
+                "1515",
+                "1515"
+            ]
+        }
+    }
+]
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -21,55 +60,67 @@ export function ProjectShow() {
     const {isMetamaskConnected, setMetamaskConnected} = useContext(MetamaskContext);
     const [contractManager, setContractManager] = useState(new ContractManager());
     const {id} = useParams();
-    const [product, setProduct] = useState([]);
+    const [project, setProject] = useState([]);
+    const [description, setDescription] = useState([]);
 
-    const [price, setPrice] = useState(0);
-    const [price1, setPrice1] = useState(0);
+    const [fundingGoal, setFundingGoal] = useState(0);
+    const [fundsRaised, setFundsRaised] = useState(0);
+
+    const [endTime, setIsEndTime] = useState(new Date().getTime() + 10000000);
+
+    // Transform the project's end time into a human-readable format.
+
 
     useEffect(() => {
-        async function init() {await getById()}
+        async function init() {
+            await getById()
+        }
         init().then(r => console.log("init"));
     }, [])
 
 
     useEffect(() => {
         // convert BigNumber to Number
-        if (product && product['fundingGoal']) {
-            const bigNumber = new BigNumber(product['fundingGoal']._hex);
+        if (project && project['fundingGoal']) {
+            const bigNumber = new BigNumber(project['fundingGoal']._hex);
             console.log(bigNumber); // "150"
-            setPrice(bigNumber["c"][0]);
+            setFundingGoal(bigNumber["c"][0]);
         }
-        if (product && product['fundsRaised']) {
-            const bigNumber = new BigNumber(product['fundsRaised']._hex);
+        if (project && project['fundsRaised']) {
+            const bigNumber = new BigNumber(project['fundsRaised']._hex);
             console.log(bigNumber); // "150"
-            setPrice1(bigNumber["c"][0]);
+            setFundsRaised(bigNumber["c"][0]);
         }
-    }, [product])
+        if (project && project['endTime']) {
+            const bigNumber = new BigNumber(project['endTime']._hex);
+            console.log(bigNumber); // "150"
+            setIsEndTime(bigNumber["c"][0]);
+        }
+    }, [project])
 
 
     async function getById() {
         let response = await contractManager.getProject(id);
-        setProduct(response)
+        setProject(response)
         console.log(response);
-        console.log(response);
-        console.log(response);
-        console.log(response);
-        console.log(response);
-
+        console.log(response['description']);
+        let response1 = JSON.parse(response['description']);
+        console.log(response1);
+        setDescription(response1);
     }
 
     async function buyProduct(id) {
-        let response = await contractManager.contribute(id,800)
+        let response = await contractManager.contribute(id, 800)
             .then(async (response) => {
                 toast.success("Product bought !");
                 await new Promise(r => setTimeout(r, 5000));
                 window.location.reload();
             })
             .catch((error) => {
-                    toast.error("Error buying product !");
+                    toast.error("Error buying project !");
                 }
             );
-        setProduct(response)
+        setProject(response)
         console.log(response);
     }
 
@@ -84,11 +135,11 @@ export function ProjectShow() {
                             className="mx-auto flex max-w-2xl items-center space-x-2 px-4 sm:px-6 lg:max-w-7xl lg:px-8">
                             <li className="text-sm">
                                 <Link to={"/products/"} aria-current="page"
-                                      className="font-medium text-gray-500 hover:text-gray-600">Products</Link>
+                                      className="font-medium">Products</Link>
                             </li>
                             <li className="text-sm">
-                                <Link to={"/product/" + id} aria-current="page"
-                                      className="font-medium text-gray-500 hover:text-gray-600"> {product ? product['name'] : null}</Link>
+                                <Link to={"/project/" + id} aria-current="page"
+                                      className="font-medium"> {project ? project['name'] : null}</Link>
                             </li>
                         </ol>
                     </nav>
@@ -96,9 +147,9 @@ export function ProjectShow() {
 
                     {/* Product info */}
                     <div
-                        className="bg-stone-200 text-stone-900 dark:bg-stone-900 dark:text-stone-200 mx-auto max-w-2xl px-4 pb-16 pt-10 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:grid-rows-[auto,auto,1fr] lg:gap-x-8 lg:px-8 lg:pb-24 lg:pt-16">
-                        <div className="lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
-                            <h1 className="text-2xl font-bold tracking-tight  sm:text-3xl">{product ? product[1] : null}</h1>
+                        className="bg-stone-200 text-stone-900 dark:bg-stone-900 dark:text-stone-200 mx-auto max-w-2xl px-4 pb-16 pt-10 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:grid-rows-[auto,auto,1fr] lg:gap-x-8 lg:px-8 lg:pb-24 lg:pt-8">
+                        <div className="lg:col-span-2 lg:border-r lg:border-stone-900 lg-dark:border-stone-200 lg:pr-8">
+                            <h1 className="text-2xl font-bold tracking-tight  sm:text-3xl">{project ? project['name'] : null}</h1>
                         </div>
 
                         {/* Options */}
@@ -107,28 +158,62 @@ export function ProjectShow() {
                             <h3 className="text-xl font-bold sm:text-xl">Owner :
                             </h3>
                             <p className="text-3xl tracking-tight ">
-                                {product && !product[0]
-                                    ?
-                                    <>
-                                        <a className={"text-sm text-indigo-600 hover:text-indigo-500"} target={"_blank"}
-                                           href={"https://sepolia.etherscan.io/address/" + product[5]}>{product[5]}</a>
-                                    </>
+                                {project && project['owner']
+                                    ? <a className={"text-sm text-indigo-600 hover:text-indigo-500 mb-10"} target={"_blank"}
+                                           href={"https://sepolia.etherscan.io/address/" + project['owner']}>{project['owner']}</a>
                                     : "Not owned yet"
                                 }
                             </p>
 
-                            {
-
-                            }
-                            <div className="relative w-full h-4 bg-gray-200 rounded-md">
-                                <div
-                                    className="absolute top-0 left-0 h-full bg-blue-500 rounded-md"
-                                    style={{ width: `${(price1 / price) * 100}%` }}
-                                ></div>
-                            </div>
-                            <p className="text-3xl tracking-tight">
-                                {price1}/{price} ETH -- {Math.round((price1 / price) * 100)}%
+                            <p className="text-3xl tracking-tight mt-6">
+                                {fundsRaised}/{fundingGoal} WEI -- {Math.round((fundsRaised / fundingGoal) * 100)}%
                             </p>
+
+                            {fundsRaised < fundingGoal
+                                ? <div className="relative w-full h-4 bg-gray-200 rounded-md mt-6">
+                                    <div
+                                        className="absolute top-0 left-0 h-full bg-blue-500 rounded-md"
+                                        style={{width: `${(fundsRaised / fundingGoal) * 100}%`}}
+                                    ></div>
+                                </div>
+                                : <div className="relative w-full h-4 bg-gray-200 rounded-md mt-6">
+                                    <div
+                                        className="absolute top-0 left-0 h-full bg-blue-500 rounded-md"
+                                        style={{width: `100%`}}
+                                    ></div>
+                                </div>
+                            }
+
+
+                            <Countdown
+                                date={endTime}
+                                renderer={({ days, hours, minutes, seconds, completed }) => {
+                                    if (completed) {
+                                        return <span className="text-red-500">Ended</span>;
+                                    } else {
+                                        return (
+                                            <div className="grid grid-cols-4 gap-4 text-center">
+                                                <div>
+                                                    <div className="text-3xl font-bold">{days}</div>
+                                                    <div className="">Days</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-3xl font-bold">{hours}</div>
+                                                    <div className="">Hours</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-3xl font-bold">{minutes}</div>
+                                                    <div className="">Minutes</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-3xl font-bold">{seconds}</div>
+                                                    <div className="">Seconds</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                }}
+                            />
 
 
                             {/* Reviews */}
@@ -155,7 +240,7 @@ export function ProjectShow() {
                                     </a>
                                 </div>
                             </div>
-                            {product && !product[0]
+                            {project && !project[0]
                                 ? null
                                 : <button
                                     className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -164,57 +249,25 @@ export function ProjectShow() {
                                             console.log(r)
                                         });
                                     }}
-                                >
-                                    Buy
-                                </button>
+                                >Buy</button>
                             }
+
+                            <ConversionForm/>
                         </div>
 
                         <div
-                            className="py-4 lg:col-span-2 lg:col-start-1 lg:border-r lg:border-gray-200 lg:pb-16 lg:pr-8 lg:pt-6">
+                            className="py-4 lg:col-span-2 lg:col-start-1 lg:border-r lg:border-stone-900 lg-dark:border-stone-200 lg:pb-16 lg:pr-8 lg:pt-6">
                             {/* Description and details */}
-                                <div className="mt-6 max-w-2xl mx-auto px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-                                    <img className={"w-full"}
-                                        src={product['imageUrl']}
-                                        alt="ui/ux review check"
-                                    />
-                                </div>
-                            <div>
-                                <h3 className="sr-only">Description</h3>
-                                <div className="space-y-6 mt-10">
-                                    <p className="text-base ">{product ? product[2] : null}</p>
-                                </div>
+                            <ProjectDescription data={description}/>
+                            <div className="my-2 max-w-2xl mx-auto px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+                                <img className={"w-full"}
+                                     src={project['imageUrl']}
+                                     alt="ui/ux review check"
+                                />
                             </div>
 
-                            <div className="mt-10">
-                                <h3 className="text-sm font-medium ">Highlights</h3>
 
-                                <div className="mt-4">
-                                    <ul role="list" className="list-disc space-y-2 pl-4 text-sm">
-                                        {/*{product1.highlights.map((highlight) => (*/}
-                                        {/*    <li key={highlight} className="text-gray-400">*/}
-                                        {/*        <span className="text-gray-600">{highlight}</span>*/}
-                                        {/*    </li>*/}
-                                        {/*))}*/}
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div className="mt-10">
-                                <h2 className="text-sm font-medium ">Details</h2>
-
-                                <div className="mt-4 space-y-6">
-                                    <p className="text-sm text-gray-600">{product ?product[2] : null}</p>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-
-                    <div className="mt-6 max-w-2xl mx-auto px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-                        <img
-                            src="https://images.unsplash.com/photo-1499696010180-025ef6e1a8f9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
-                            alt="ui/ux review check"
-                        />
                     </div>
                 </div>
             </div>
