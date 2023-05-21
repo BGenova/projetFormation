@@ -110,7 +110,7 @@ const ProjectForm = () => {
                     ;
                 }
                 return () => {
-                    editorRef.destroy();
+                    //editorRef.destroy();
                 };
             }, []
         )
